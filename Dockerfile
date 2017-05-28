@@ -71,7 +71,7 @@ RUN chown snort.snort /var/log/snort/barnyard2.waldo
 RUN chmod o-r /etc/snort/barnyard2.conf
 ADD superv.conf /etc/supervisor/conf.d/
 ADD barnyard-configurer.sh /opt/
-ENV interface eth0
+RUN chmod +x /opt/barnyard-configurer.sh
 RUN pip install pip --upgrade
 RUN pip install supervisor
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
