@@ -6,7 +6,7 @@ ENV CC gcc
 ENV CXX g++
 ADD sources.list /etc/apt/sources.list
 RUN apt-get update && apt upgrade -y
-RUN apt-get install net-tools ethtool inetutils-ping git wget build-essential libpcap-dev libpcre3-dev libdumbnet-dev bison flex zlib1g-dev liblzma-dev openssl libssl-dev libnghttp2-dev  python-pip supervisor libmysqlclient-dev mysql-client autoconf libtool -y
+RUN apt-get install cron net-tools ethtool inetutils-ping git wget build-essential libpcap-dev libpcre3-dev libdumbnet-dev bison flex zlib1g-dev liblzma-dev openssl libssl-dev libnghttp2-dev  python-pip supervisor libmysqlclient-dev mysql-client autoconf libtool libcrypt-ssleay-perl liblwp-useragent-determined-perl -y
 RUN mkdir /opt/snort_src
 WORKDIR /opt/snort_src
 RUN wget -c -t 0 https://snort.org/downloads/snort/daq-2.0.6.tar.gz
@@ -70,8 +70,6 @@ RUN chmod o-r /etc/snort/barnyard2.conf
 ADD superv.conf /etc/supervisor/conf.d/
 ADD barnyard.sh /opt/
 RUN chmod +x /opt/barnyard.sh
-
-RUN apt-get install -y libcrypt-ssleay-perl liblwp-useragent-determined-perl
 RUN wget https://github.com/shirkdog/pulledpork/archive/master.tar.gz -O pulledpork-master.tar.gz
 RUN tar xzvf pulledpork-master.tar.gz
 WORKDIR /opt/snort_src/pulledpork-master/
@@ -84,7 +82,6 @@ RUN /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l
 RUN snort -T -c /etc/snort/snort.conf -i eth0
 ADD cron /tmp/
 RUN crontab /tmp/cron
-
-#RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-#ENTRYPOINT ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ENTRYPOINT ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
 CMD bash
