@@ -2,11 +2,11 @@ FROM ubuntu:xenial
 MAINTAINER Muhammad Salehi <salehi1994@gmail.com>
 ENV DEBIAN_FRONTEND noninteractive
 ENV COVERALLS_TOKEN [secure]
-ENV CXX g++
 ENV CC gcc
+ENV CXX g++
 ADD sources.list /etc/apt/sources.list
 RUN apt-get update && apt upgrade -y
-RUN apt-get install net-tools ethtool inetutils-ping git wget build-essential libpcap-dev libpcre3-dev libdumbnet-dev bison flex zlib1g-dev liblzma-dev openssl libssl-dev libnghttp2-dev  python-pip -y
+RUN apt-get install net-tools ethtool inetutils-ping git wget build-essential libpcap-dev libpcre3-dev libdumbnet-dev bison flex zlib1g-dev liblzma-dev openssl libssl-dev libnghttp2-dev  python-pip supervisor libmysqlclient-dev mysql-client autoconf libtool -y
 RUN mkdir /opt/snort_src
 WORKDIR /opt/snort_src
 RUN wget -c -t 0 https://snort.org/downloads/snort/daq-2.0.6.tar.gz
@@ -54,7 +54,6 @@ RUN snort -T -i eth0 -c /etc/snort/snort.conf
 WORKDIR /opt/snort_src
 #RUN debconf-set-selections <<< 'mysql-server mysql-server/root_password password password123'
 #RUN debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password password123'
-RUN apt-get install -y libmysqlclient-dev mysql-client autoconf libtool
 RUN wget https://github.com/firnsy/barnyard2/archive/master.tar.gz -O barnyard2-Master.tar.gz
 RUN tar zxvf barnyard2-Master.tar.gz
 RUN cd barnyard2-master ; autoreconf -fvi -I ./m4
@@ -71,8 +70,9 @@ RUN touch /var/log/snort/barnyard2.waldo
 RUN chown snort.snort /var/log/snort/barnyard2.waldo
 RUN chmod o-r /etc/snort/barnyard2.conf
 ADD superv.conf /etc/supervisor/conf.d/
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ADD barnyard-configurer.sh /opt/
 ENV interface eth0
+RUN pip install pip --upgrade
 RUN pip install supervisor
-ENTRYPOINT ["/usr/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+ENTRYPOINT ["/usr/local/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
