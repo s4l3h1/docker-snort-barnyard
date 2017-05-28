@@ -50,7 +50,7 @@ RUN cp -fv * /usr/local/lib/snort_dynamicpreprocessor/
 ADD snort.conf /etc/snort/snort.conf
 RUN touch /etc/snort/rules/white_list.rules
 RUN touch /etc/snort/rules/black_list.rules
-RUN snort -T -i eth0 -c /etc/snort/snort.conf
+#RUN snort -T -i eth0 -c /etc/snort/snort.conf
 WORKDIR /opt/snort_src
 RUN wget https://github.com/firnsy/barnyard2/archive/master.tar.gz -O barnyard2-Master.tar.gz
 RUN tar zxvf barnyard2-Master.tar.gz
@@ -70,5 +70,21 @@ RUN chmod o-r /etc/snort/barnyard2.conf
 ADD superv.conf /etc/supervisor/conf.d/
 ADD barnyard.sh /opt/
 RUN chmod +x /opt/barnyard.sh
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-ENTRYPOINT ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+
+RUN apt-get install -y libcrypt-ssleay-perl liblwp-useragent-determined-perl
+RUN wget https://github.com/shirkdog/pulledpork/archive/master.tar.gz -O pulledpork-master.tar.gz
+RUN tar xzvf pulledpork-master.tar.gz
+WORKDIR /opt/snort_src/pulledpork-master/
+RUN cp -fv pulledpork.pl /usr/local/bin
+RUN chmod +x /usr/local/bin/pulledpork.pl
+RUN cp -fv etc/*.conf /etc/snort
+RUN /usr/local/bin/pulledpork.pl -V
+ADD pulledpork.conf /etc/snort/pulledpork.conf
+RUN /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l
+RUN snort -T -c /etc/snort/snort.conf -i eth0
+ADD cron /tmp/
+RUN crontab /tmp/cron
+
+#RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+#ENTRYPOINT ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+CMD bash
