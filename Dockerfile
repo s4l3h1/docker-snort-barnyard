@@ -52,8 +52,6 @@ RUN touch /etc/snort/rules/white_list.rules
 RUN touch /etc/snort/rules/black_list.rules
 RUN snort -T -i eth0 -c /etc/snort/snort.conf
 WORKDIR /opt/snort_src
-#RUN debconf-set-selections <<< 'mysql-server mysql-server/root_password password password123'
-#RUN debconf-set-selections <<< 'mysql-server mysql-server/root_password_again password password123'
 RUN wget https://github.com/firnsy/barnyard2/archive/master.tar.gz -O barnyard2-Master.tar.gz
 RUN tar zxvf barnyard2-Master.tar.gz
 RUN cd barnyard2-master ; autoreconf -fvi -I ./m4
@@ -72,7 +70,5 @@ RUN chmod o-r /etc/snort/barnyard2.conf
 ADD superv.conf /etc/supervisor/conf.d/
 ADD barnyard-configurer.sh /opt/
 RUN chmod +x /opt/barnyard-configurer.sh
-RUN pip install pip --upgrade
-RUN pip install supervisor
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-ENTRYPOINT ["/usr/local/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+#ENTRYPOINT ["/usr/local/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
