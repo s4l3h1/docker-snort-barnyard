@@ -68,7 +68,7 @@ RUN touch /var/log/snort/barnyard2.waldo
 RUN chown snort.snort /var/log/snort/barnyard2.waldo
 RUN chmod o-r /etc/snort/barnyard2.conf
 ADD superv.conf /etc/supervisor/conf.d/
-ADD barnyard-configurer.sh /opt/
-RUN chmod +x /opt/barnyard-configurer.sh
+ADD barnyard.sh /opt/
+RUN chmod +x /opt/barnyard.sh
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-#ENTRYPOINT ["/usr/local/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+ENTRYPOINT ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
