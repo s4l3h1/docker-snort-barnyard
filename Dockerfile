@@ -5,52 +5,44 @@ ENV COVERALLS_TOKEN [secure]
 ENV CC gcc
 ENV CXX g++
 ADD sources.list /etc/apt/sources.list
-RUN apt-get update && apt upgrade -y
-RUN apt-get install cron net-tools ethtool inetutils-ping git wget build-essential libpcap-dev libpcre3-dev libdumbnet-dev bison flex zlib1g-dev liblzma-dev openssl libssl-dev libnghttp2-dev  python-pip supervisor libmysqlclient-dev mysql-client autoconf libtool libcrypt-ssleay-perl liblwp-useragent-determined-perl -y
-RUN mkdir /opt/snort_src
+RUN apt-get update && apt upgrade -y ;\
+apt-get install cron net-tools ethtool inetutils-ping git wget build-essential libpcap-dev libpcre3-dev libdumbnet-dev bison flex zlib1g-dev liblzma-dev openssl libssl-dev libnghttp2-dev  python-pip supervisor libmysqlclient-dev mysql-client autoconf libtool libcrypt-ssleay-perl liblwp-useragent-determined-perl -y ;\
+apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* ;\
+mkdir /opt/snort_src
 WORKDIR /opt/snort_src
-RUN wget -c -t 0 https://snort.org/downloads/snort/daq-2.0.6.tar.gz
-RUN tar -xvzf daq-2.0.6.tar.gz; cd daq-2.0.6; ./configure; make -j32; make install
-RUN wget https://snort.org/downloads/snort/snort-2.9.9.0.tar.gz
-RUN tar -xvzf snort-2.9.9.0.tar.gz; cd snort-2.9.9.0; ./configure --enable-sourcefire; make -j32; make install
-RUN ldconfig
-RUN snort -V
-RUN groupadd snort
-RUN useradd snort -r -s /sbin/nologin -c SNORT_IDS -g snort
-RUN mkdir /etc/snort
-RUN mkdir /etc/snort/rules
-RUN mkdir /etc/snort/rules/iplists
-RUN mkdir /etc/snort/preproc_rules
-RUN mkdir /usr/local/lib/snort_dynamicrules
-RUN mkdir /etc/snort/so_rules
-# Create some files that stores rules and ip lists
-RUN touch /etc/snort/rules/iplists/black_list.rules
-RUN touch /etc/snort/rules/iplists/white_list.rules
-RUN touch /etc/snort/rules/local.rules
-RUN touch /etc/snort/sid-msg.map
-# Create our logging directories:
-RUN mkdir /var/log/snort
-RUN mkdir /var/log/snort/archived_logs
-# Adjust permissions:
-RUN chmod -R 5775 /etc/snort
-RUN chmod -R 5775 /var/log/snort
-RUN chmod -R 5775 /var/log/snort/archived_logs
-RUN chmod -R 5775 /etc/snort/so_rules
-RUN chmod -R 5775 /usr/local/lib/snort_dynamicrules
-# Change Ownership on folders:
-RUN chown -R snort:snort /etc/snort
-RUN chown -R snort:snort /var/log/snort
-RUN chown -R snort:snort /usr/local/lib/snort_dynamicrules
-WORKDIR /opt/snort_src/snort-2.9.9.0/etc/
-RUN cp -fv *.conf* /etc/snort
-RUN cp -fv *.map /etc/snort
-RUN cp -fv *.dtd /etc/snort
-WORKDIR /opt/snort_src/snort-2.9.9.0/src/dynamic-preprocessors/build/usr/local/lib/snort_dynamicpreprocessor/
-RUN cp -fv * /usr/local/lib/snort_dynamicpreprocessor/
+RUN wget -c -t 0 https://snort.org/downloads/snort/daq-2.0.6.tar.gz ;\
+tar -xvzf daq-2.0.6.tar.gz; cd daq-2.0.6; ./configure; make; make install; cd ..;\
+wget https://snort.org/downloads/snort/snort-2.9.9.0.tar.gz ;\
+tar -xvzf snort-2.9.9.0.tar.gz; cd snort-2.9.9.0; ./configure --enable-sourcefire; make; make install; cd ..;\
+ldconfig ;\
+snort -V ;\
+groupadd snort ;\
+useradd snort -r -s /sbin/nologin -c SNORT_IDS -g snort ;\
+mkdir /etc/snort ;\
+mkdir /etc/snort/rules ;\
+mkdir /etc/snort/rules/iplists ;\
+mkdir /etc/snort/preproc_rules ;\
+mkdir /usr/local/lib/snort_dynamicrules ;\
+mkdir /etc/snort/so_rules ;\
+touch /etc/snort/rules/iplists/black_list.rules ;\
+touch /etc/snort/rules/iplists/white_list.rules ;\
+touch /etc/snort/rules/local.rules ;\
+touch /etc/snort/sid-msg.map ;\
+touch /etc/snort/rules/white_list.rules ;\
+touch /etc/snort/rules/black_list.rules ;\
+mkdir /var/log/snort ;\
+mkdir /var/log/snort/archived_logs ;\
+chmod -R 5775 /etc/snort ;\
+chmod -R 5775 /var/log/snort ;\
+chmod -R 5775 /var/log/snort/archived_logs ;\
+chmod -R 5775 /etc/snort/so_rules ;\
+chmod -R 5775 /usr/local/lib/snort_dynamicrules ;\
+chown -R snort:snort /etc/snort ;\
+chown -R snort:snort /var/log/snort ;\
+chown -R snort:snort /usr/local/lib/snort_dynamicrules 
+cp -fv /opt/snort_src/snort-2.9.9.0/etc/{*.map,*.dtd,*.conf*} /etc/snort ;\
+cp -rfv /opt/snort_src/snort-2.9.9.0/src/dynamic-preprocessors/build/usr/local/lib/snort_dynamicpreprocessor /usr/local/lib/
 ADD snort.conf /etc/snort/snort.conf
-RUN touch /etc/snort/rules/white_list.rules
-RUN touch /etc/snort/rules/black_list.rules
-#RUN snort -T -i eth0 -c /etc/snort/snort.conf
 WORKDIR /opt/snort_src
 RUN wget https://github.com/firnsy/barnyard2/archive/master.tar.gz -O barnyard2-Master.tar.gz
 RUN tar zxvf barnyard2-Master.tar.gz
@@ -82,5 +74,4 @@ RUN /usr/local/bin/pulledpork.pl -c /etc/snort/pulledpork.conf -l
 RUN snort -T -c /etc/snort/snort.conf -i eth0
 ADD cron /tmp/
 RUN crontab /tmp/cron
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ENTRYPOINT ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
